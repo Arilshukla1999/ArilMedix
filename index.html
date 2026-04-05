@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ArilMedix — AI Health Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#030712;--bg2:#0d1117;--bg3:#161b22;--border:rgba(0,212,255,0.15);--blue:#00d4ff;--blue2:#0099cc;--green:#00ff88;--red:#ff4757;--yellow:#ffa502;--text:#e6edf3;--muted:#7d8590}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(13,17,23,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;background:linear-gradient(90deg,var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-badge{background:rgba(0,212,255,0.1);border:1px solid var(--border);color:var(--blue);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}
+.hero{text-align:center;padding:60px 24px 40px;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,212,255,0.08) 0%,transparent 70%)}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.08);border:1px solid var(--border);color:var(--blue);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;margin-bottom:20px}
+.pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.5)}}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(28px,6vw,48px);font-weight:800;line-height:1.15;margin-bottom:16px}
+.hero h1 span{background:linear-gradient(90deg,var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:15px;max-width:400px;margin:0 auto;line-height:1.6}
+.main{padding:0 16px 40px;max-width:600px;margin:0 auto}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;box-shadow:0 0 40px rgba(0,212,255,0.04)}
+.card-title{font-weight:600;font-size:14px;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.08em}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;padding:16px;resize:none;outline:none;transition:border-color 0.2s;min-height:120px;line-height:1.6}
+textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,212,255,0.08)}
+textarea::placeholder{color:var(--muted)}
+.analyze-btn{width:100%;margin-top:12px;padding:16px;background:linear-gradient(135deg,var(--blue),var(--blue2));border:none;border-radius:12px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.analyze-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,212,255,0.3)}
+.analyze-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.loading{display:flex;align-items:center;gap:12px;padding:20px 0;color:var(--muted);font-size:14px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.results{animation:fadeIn 0.4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.severity-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:16px}
+.sev-low{background:rgba(0,255,136,0.12);color:var(--green);border:1px solid rgba(0,255,136,0.3)}
+.sev-medium{background:rgba(255,165,2,0.12);color:var(--yellow);border:1px solid rgba(255,165,2,0.3)}
+.sev-high{background:rgba(255,71,87,0.12);color:var(--red);border:1px solid rgba(255,71,87,0.3)}
+.result-section{margin-bottom:20px}
+.result-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.result-text{font-size:15px;line-height:1.7;color:var(--text)}
+.condition-list{list-style:none}
+.condition-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14px;line-height:1.5}
+.condition-list li:last-child{border-bottom:none}
+.dot{width:6px;height:6px;background:var(--blue);border-radius:50%;margin-top:7px;flex-shrink:0}
+.doctor-btn{width:100%;padding:16px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:12px;color:var(--green);font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.doctor-btn:hover{background:rgba(0,255,136,0.14);transform:translateY(-1px)}
+.doctor-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.map-link{display:flex;align-items:center;gap:10px;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--blue);text-decoration:none;font-size:14px;font-weight:500;transition:all 0.2s;margin-top:12px}
+.map-link:hover{border-color:var(--blue);background:rgba(0,212,255,0.05)}
+.location-error{color:var(--yellow);font-size:13px;margin-top:10px}
+.error-box{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);border-radius:12px;padding:16px;color:var(--red);font-size:13px;margin-top:8px;line-height:1.5}
+.disclaimer{text-align:center;padding:24px 16px 40px;color:var(--muted);font-size:12px;line-height:1.6;max-width:500px;margin:0 auto;border-top:1px solid var(--border)}
+.disclaimer strong{color:var(--text)}
+.reset-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Space Grotesk',sans-serif;transition:all 0.2s;margin-top:16px}
+.reset-btn:hover{color:var(--text);border-color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="root">
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon">🩺</div>
+      <span class="logo-text">ArilMedix</span>
+    </div>
+    <span class="nav-badge">AI Powered</span>
+  </nav>
+  <div class="hero">
+    <div class="hero-tag"><span class="pulse"></span> AI Health Assistant — Active</div>
+    <h1>Know Your Symptoms<br/><span>Instantly</span></h1>
+    <p>Describe what you're feeling and get AI-powered insights, severity assessment, and nearby doctor recommendations.</p>
+  </div>
+  <div class="main">
+    <div class="card">
+      <div class="card-title">🔍 Describe Your Symptoms</div>
+      <textarea id="symptomInput" placeholder="e.g. I have a severe headache, fever of 38°C, and my throat is sore since yesterday..."></textarea>
+      <div id="errorBox" class="error-box" style="display:none"></div>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyzeSymptoms()">⚡ Analyze Symptoms</button>
+    </div>
+    <div class="card" id="loadingCard" style="display:none">
+      <div class="loading"><div class="spinner"></div>ArilMedix AI is analyzing your symptoms...</div>
+    </div>
+    <div class="card results" id="resultsCard" style="display:none">
+      <div class="card-title">📋 Analysis Results</div>
+      <span class="severity-badge" id="severityBadge"></span>
+      <div class="result-section">
+        <div class="result-label">Possible Conditions</div>
+        <ul class="condition-list" id="conditionList"></ul>
+      </div>
+      <div class="result-section">
+        <div class="result-label">What To Do</div>
+        <div class="result-text" id="adviceText"></div>
+      </div>
+      <div class="result-section" id="warningSection" style="display:none">
+        <div class="result-label" style="color:var(--red)">⚠ Important</div>
+        <div class="result-text" id="warningText" style="color:var(--yellow)"></div>
+      </div>
+      <button class="reset-btn" onclick="resetForm()">↩ Check New Symptoms</button>
+    </div>
+    <div class="card" id="doctorCard" style="display:none">
+      <div class="card-title">📍 Find Nearby Doctors</div>
+      <button class="doctor-btn" id="doctorBtn" onclick="findDoctors()">📍 Find Doctors Near Me</button>
+      <p class="location-error" id="locationError" style="display:none"></p>
+      <a class="map-link" id="mapLink" style="display:none" target="_blank" rel="noopener noreferrer">🗺 Open Nearby Clinics & Hospitals in Google Maps →</a>
+    </div>
+  </div>
+  <div class="disclaimer">
+    <strong>⚕ Medical Disclaimer</strong><br/>
+    ArilMedix is not a substitute for professional medical advice, diagnosis, or treatment.
+    Always consult a licensed doctor. In emergencies call local emergency services.
+  </div>
+</div>
+
+<script>
+const GROQ_KEY = "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";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+async function analyzeSymptoms() {
+  const symptoms = document.getElementById("symptomInput").value.trim();
+  if (!symptoms) return;
+
+  document.getElementById("analyzeBtn").disabled = true;
+  document.getElementById("analyzeBtn").textContent = "Analyzing...";
+  document.getElementById("loadingCard").style.display = "block";
+  document.getElementById("resultsCard").style.display = "none";
+  document.getElementById("doctorCard").style.display = "none";
+  document.getElementById("errorBox").style.display = "none";
+
+  try {
+    const res = await fetch(GROQ_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        messages: [
+          {
+            role: "system",
+            content: `You are ArilMedix, an AI health assistant. Reply ONLY with a raw JSON object, no markdown, no backticks, no explanation whatsoever. Exact format:
+{"severity":"Medium","conditions":["Condition 1","Condition 2","Condition 3"],"advice":"2-3 sentences of practical advice.","warning":"Emergency warning sentence, or empty string if not needed."}
+severity must be exactly: Low, Medium, or High. conditions must have exactly 3 strings. Return pure JSON only.`
+          },
+          {
+            role: "user",
+            content: `Patient symptoms: ${symptoms}`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 300
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) { showError(data.error.message); return; }
+    const raw = data.choices[0].message.content;
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) { showError("Could not read response. Please try again."); return; }
+    showResults(JSON.parse(match[0]));
+  } catch(e) {
+    showError("Connection error. Check internet and try again.");
+  }
+
+  document.getElementById("loadingCard").style.display = "none";
+  document.getElementById("analyzeBtn").disabled = false;
+  document.getElementById("analyzeBtn").innerHTML = "⚡ Analyze Symptoms";
+}
+
+function showResults(r) {
+  const sc = r.severity==="Low"?"sev-low":r.severity==="Medium"?"sev-medium":"sev-high";
+  const si = r.severity==="Low"?"✓":r.severity==="Medium"?"⚠":"🚨";
+  const b = document.getElementById("severityBadge");
+  b.textContent = `${si} ${r.severity} Severity`;
+  b.className = `severity-badge ${sc}`;
+  document.getElementById("conditionList").innerHTML = r.conditions.map(c=>`<li><span class="dot"></span>${c}</li>`).join("");
+  document.getElementById("adviceText").textContent = r.advice;
+  if (r.warning) {
+    document.getElementById("warningText").textContent = r.warning;
+    document.getElementById("warningSection").style.display = "block";
+  } else {
+    document.getElementById("warningSection").style.display = "none";
+  }
+  document.getElementById("resultsCard").style.display = "block";
+  document.getElementById("doctorCard").style.display = "block";
+}
+
+function showError(msg) {
+  document.getElementById("loadingCard").style.display = "none";
+  document.getElementById("analyzeBtn").disabled = false;
+  document.getElementById("analyzeBtn").innerHTML = "⚡ Analyze Symptoms";
+  const b = document.getElementById("errorBox");
+  b.textContent = "⚠ " + msg;
+  b.style.display = "block";
+}
+
+function resetForm() {
+  document.getElementById("symptomInput").value = "";
+  document.getElementById("resultsCard").style.display = "none";
+  document.getElementById("doctorCard").style.display = "none";
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("mapLink").style.display = "none";
+  document.getElementById("locationError").style.display = "none";
+  document.getElementById("doctorBtn").disabled = false;
+  document.getElementById("doctorBtn").innerHTML = "📍 Find Doctors Near Me";
+}
+
+function findDoctors() {
+  const btn = document.getElementById("doctorBtn");
+  btn.disabled = true;
+  btn.textContent = "Getting your location...";
+  if (!navigator.geolocation) { showMapLink("https://www.google.com/maps/search/doctor+clinic+near+me"); return; }
+  navigator.geolocation.getCurrentPosition(
+    p => showMapLink(`https://www.google.com/maps/search/doctor+clinic/@${p.coords.latitude},${p.coords.longitude},14z`),
+    () => {
+      document.getElementById("locationError").textContent = "⚠ Location denied. Using general search.";
+      document.getElementById("locationError").style.display = "block";
+      showMapLink("https://www.google.com/maps/search/doctor+clinic+near+me");
+    }
+  );
+}
+
+function showMapLink(url) {
+  document.getElementById("doctorBtn").textContent = "✓ Location Found";
+  const l = document.getElementById("mapLink");
+  l.href = url;
+  l.style.display = "flex";
+}
+
+document.getElementById("symptomInput").addEventListener("keydown", e => {
+  if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); analyzeSymptoms(); }
+});
+</script>
+</body>
+</html>
